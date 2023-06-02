@@ -1,0 +1,29 @@
+{
+  "name": "rivera-paywall",
+  "version": "1.0.0",
+  "description": "",
+  "main": "functions.php",
+  "scripts": {
+    "closure-compiler": "npx google-closure-compiler --js=src/js/scripts.js --js_output_file=assets/js/rivera-paywall.min.js",
+    "sass": "sass --watch src/scss/style.scss:assets/css/paywall.css --style=compressed",
+    "sass:full": "sass --watch src/scss/style.scss:assets/css/paywall.css --style=expanded",
+    "watch": "nodemon --watch src -x \"cp src/js/scripts.js assets/js/rivera-paywall.min.js && npm run sass:full\"",
+    "dev": "nodemon --watch src -x \"npm run closure-compiler && npm run sass\"",
+    "build": "npm run closure-compiler && sass src/scss/style.scss:assets/css/paywall.css && zip -r rivera-paywall.zip . -x \"src/*\" -x \"node_modules/*\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://pedro_rivera@bitbucket.org/pedro_rivera/rivera-paywall.git"
+  },
+  "author": "Pedro Rivera",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://bitbucket.org/pedro_rivera/rivera-paywall/issues"
+  },
+  "homepage": "https://bitbucket.org/pedro_rivera/rivera-paywall#readme",
+  "devDependencies": {
+    "npx": "^10.2.2",
+    "sass": "^1.58.0"
+  }
+}

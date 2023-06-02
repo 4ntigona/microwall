@@ -1,0 +1,108 @@
+:root {
+    --width: min(100%, 420px);
+}
+
+.paywall {
+    &-wrap {
+        --_grid-columns: repeat(1, minmax(0, 1fr));
+        @media (width > 767px) {
+            --_grid-columns: repeat(3, minmax(0, 1fr));
+        }
+        padding-right: 20px;
+        display: grid;
+        gap: 2rem;
+        grid-template-columns: var(--_grid-columns);
+        > h1 {
+            @media (width > 767px) {
+                grid-column: 1 / -1;
+            }
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: var(--width);
+            .form_field {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                &:has(select) {
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    label {
+                        flex: 100%;
+                    }
+                    input[type=number] {
+                        flex: 1;
+                    }
+                }
+            }
+        }
+
+        .select2 {
+            &-container {
+                width: var(--width) !important;
+            }
+            &-selection {
+                &__rendered {
+                    display: flex !important;
+                    flex-wrap: wrap;
+                    gap: 5px;
+                    padding: 5px !important;
+                    > li {
+                        margin: 0 !important;
+                        padding: 0 8px !important;
+                        display: flex;
+                        gap: 3px;
+                        align-items: center;
+                        height: 1.75rem;
+                        &:not(.select2-search) {
+                            background-color: #f0f0f1 !important;
+                            color: #0a4b78 !important;
+                            border-color: currentColor !important;
+                            span {
+                                color: currentColor !important;
+                            }
+                        }
+                        &.select2-search {
+                            padding: 0 !important;
+                            input {
+                                margin-top: 0 !important;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        [class*=status] {
+            text-transform: capitalize;
+            font-weight: 600;
+            &.status-Ativa {
+                // use default wordpress green color
+                color: #46b450;
+            }
+            &.status-Inativa {
+                // use default wordpress error color
+                color: #dc3232;
+            }
+        }
+    }
+
+    &-section {
+        p {
+            margin: 0;
+        }
+        &:last-of-type {
+            @media (width > 767px) {
+                grid-column: 1 / -1;
+            }
+            @media (width < 768px) {
+                .date {
+                    display: none;
+                }
+            }
+        }
+    }
+}
