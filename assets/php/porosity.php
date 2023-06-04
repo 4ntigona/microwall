@@ -1,50 +1,4 @@
 <?php
-// Verificar se o usuário tem acesso poroso
-function paywall_has_porosity_access($user_id) {
-    $porosity_enabled = get_option('paywall_porosity_enabled', false);
-    $porosity_limit = intval(get_option('paywall_porosity_limit', 0));
-    
-    if (!$porosity_enabled || $porosity_limit <= 0) {
-        return false;
-    }
-    
-    $access_count = get_user_meta($user_id, 'paywall_access_count', true);
-    $access_count = intval($access_count);
-    
-    return $access_count < $porosity_limit;
-}
-
-// Verificar a permissão de acesso ao conteúdo
-function paywall_check_content_access($content) {
-    global $post;
-    
-    $selected_tags = get_option('paywall_selected_tags', array());
-    
-    if (empty($selected_tags) || is_user_logged_in() || current_user_can('administrator')) {
-        return $content;
-    }
-    
-    $tags = wp_get_post_tags($post->ID, array('fields' => 'ids'));
-    
-    $intersect = array_intersect($tags, $selected_tags);
-    
-    if (!empty($intersect) && paywall_has_porosity_access(get_current_user_id())) {
-        $user_id = get_current_user_id();
-        $access_count = get_user_meta($user_id, 'paywall_access_count', true);
-        $access_count = intval($access_count);
-        update_user_meta($user_id, 'paywall_access_count', $access_count + 1);
-        return $content;
-    }
-    
-    return '<p>Você precisa ser um usuário assinante para visualizar este conteúdo.</p>';
-}
-
-// Modificar a função de restrição de acesso no front-end
-function paywall_modify_content_access() {
-    add_filter('the_content', 'paywall_check_content_access');
-}
-add_action('wp', 'paywall_modify_content_access');
-
 // Adicionar configurações de porosidade no painel de administração
 function paywall_render_porosity_settings() {
     $porosity_enabled = get_option('paywall_porosity_enabled', false);
@@ -60,10 +14,13 @@ function paywall_render_porosity_settings() {
             <input type="checkbox" id="paywall_porosity_enabled" name="paywall_porosity_enabled" <?php checked($porosity_enabled); ?> />
             Permitir acesso poroso
         </label>
-        <br>
         <label for="paywall_porosity_limit">
             Número máximo de itens permitidos sem estar logado:
             <input type="number" id="paywall_porosity_limit" name="paywall_porosity_limit" value="<?php echo $porosity_limit; ?>" min="0" />
+        </label>
+        <label for="paywall_porosity_message">
+            Mensagem:
+            <input type="text" id="paywall_porosity_message" name="paywall_porosity_message" value="<?php echo $porosity_message; ?>" />
         </label>
         
         <?php submit_button('Salvar', 'primary', 'submit', false); ?>
@@ -76,9 +33,11 @@ function paywall_save_porosity_settings() {
     if (isset($_POST['_wpnonce']) && wp_verify_nonce($_POST['_wpnonce'], 'paywall_porosity_settings')) {
         $porosity_enabled = isset($_POST['paywall_porosity_enabled']) ? true : false;
         $porosity_limit = intval($_POST['paywall_porosity_limit']);
+        $porosity_message = sanitize_text_field($_POST['paywall_porosity_message']);
         
         update_option('paywall_porosity_enabled', $porosity_enabled);
         update_option('paywall_porosity_limit', $porosity_limit);
+        update_option('paywall_porosity_message', $porosity_message);
         
         wp_safe_redirect(admin_url('admin.php?page=paywall-settings'));
         exit();
@@ -95,7 +54,36 @@ function paywall_add_porosity_settings_fields() {
     add_settings_section('paywall_porosity_settings_section', 'Configurações de Porosidade', 'paywall_render_porosity_settings', 'paywall_settings');
     register_setting('paywall_settings', 'paywall_porosity_enabled');
     register_setting('paywall_settings', 'paywall_porosity_limit');
+    register_setting('paywall_settings', 'paywall_porosity_message');
 }
 add_action('admin_init', 'paywall_add_porosity_settings_fields');
+
+// Função para atualizar o contador de visualizações do usuário não logado
+function paywall_update_user_view_count() {
+    $selected_tags = get_option('paywall_selected_tags', array());
+    $current_user = wp_get_current_user();
+    $user_id = $current_user->ID;
+
+    // Verificar se o usuário não está logado
+    if (!is_user_logged_in() && !in_array('subscriber', $current_user->roles)) {
+        $cookie_name = 'paywall_view_count';
+        $view_count = isset($_COOKIE[$cookie_name]) ? intval($_COOKIE[$cookie_name]) : 0;
+
+        // Verificar se o usuário está visualizando um conteúdo com as tags configuradas
+        if (has_tag($selected_tags)) {
+            // Aumentar o contador de visualizações
+            $view_count++;
+            setcookie($cookie_name, $view_count, time() + (3600 * 24), COOKIEPATH, COOKIE_DOMAIN);
+        }
+    }
+}
+add_action('wp', 'paywall_update_user_view_count');
+
+// Função para obter o contador de visualizações do usuário não logado
+function paywall_get_user_view_count() {
+    $cookie_name = 'paywall_view_count';
+    return isset($_COOKIE[$cookie_name]) ? intval($_COOKIE[$cookie_name]) : 0;
+}
+
 
 ?>

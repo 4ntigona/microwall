@@ -429,48 +429,6 @@ function paywall_show_user_meta_fields($user) {
 add_action('show_user_profile', 'paywall_show_user_meta_fields');
 add_action('edit_user_profile', 'paywall_show_user_meta_fields');
 
-// Filtrar o conteúdo para aplicar a restrição de acesso
-function paywall_filter_content($content) {
-    global $post;
-
-    // Verificar se o usuário é um assinante ativo ou um administrador
-    $user = wp_get_current_user();
-    $is_subscriber = in_array('subscriber', $user->roles);
-    $is_admin = current_user_can('administrator');
-
-    // Verificar se o usuário é um assinante ativo ou um administrador antes de aplicar a restrição
-    if (($is_subscriber && paywall_is_subscription_active($user->ID)) || $is_admin) {
-        return $content; // Exibir o conteúdo normalmente para assinantes ativos e administradores
-    }
-
-    // Verificar se o post tem uma ou mais tags configuradas no Paywall
-    $restricted_tags = get_option('paywall_selected_tags', array());
-    $post_tags = get_the_tags($post->ID);
-
-    if (!empty($post_tags) && !empty($restricted_tags)) {
-        foreach ($post_tags as $tag) {
-            if (in_array($tag->term_id, $restricted_tags)) {
-                // Se o post tiver uma das tags restritas, exibir apenas o primeiro parágrafo e o formulário de login
-                $first_paragraph = '';
-                $paragraphs = explode('</p>', $content);
-                if (!empty($paragraphs)) {
-                    $first_paragraph = $paragraphs[0] . '</p>';
-                }
-
-                // Formulário de login
-                $login_form = wp_login_form(array(
-                    'echo' => false
-                ));
-
-                return $first_paragraph . $login_form;
-            }
-        }
-    }
-
-    return $content; // Exibir o conteúdo normalmente para posts sem tags restritas
-}
-add_filter('the_content', 'paywall_filter_content');
-
 
 // Verificar se a assinatura de um usuário está ativa
 function paywall_is_subscription_active($user_id) {
@@ -544,6 +502,9 @@ function paywall_remove_cron_jobs() {
 }
 
 register_uninstall_hook(__FILE__, 'paywall_remove_cron_jobs');
+
+// include filter access file
+require_once plugin_dir_path(__FILE__) . 'assets/php/filter-access.php';
 
 // include assets/php/woocommerce.php file
 require_once plugin_dir_path(__FILE__) . 'assets/php/woocommerce.php';
