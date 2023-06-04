@@ -13,3 +13,4 @@ really really simple paywall plugin for wordpress
 
 - [ ] woocommerce integration
 - [ ] agnostic user creation integration (to work with any user creation form plugin)
+- [ ] localization
