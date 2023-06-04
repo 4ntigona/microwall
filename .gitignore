@@ -1,0 +1,5 @@
+# node_modules directory
+node_modules
+
+# sass
+.sass-cache
