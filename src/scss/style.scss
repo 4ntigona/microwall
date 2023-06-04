@@ -2,7 +2,7 @@
     --width: min(100%, 420px);
 }
 
-.paywall {
+.microwall {
     &-wrap {
         --_grid-columns: repeat(1, minmax(0, 1fr));
         @media (width > 767px) {

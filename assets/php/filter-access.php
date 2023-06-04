@@ -1,7 +1,7 @@
 <?php
 
 // Filtrar o conteúdo para aplicar a restrição de acesso
-function paywall_filter_content($content) {
+function microwall_filter_content($content) {
     global $post;
 
     // Verificar se o usuário é um assinante ativo ou um administrador
@@ -10,21 +10,21 @@ function paywall_filter_content($content) {
     $is_admin = current_user_can('administrator');
 
     // Verificar se o usuário é um assinante ativo ou um administrador antes de aplicar a restrição
-    if (($is_subscriber && paywall_is_subscription_active($user->ID)) || $is_admin) {
+    if (($is_subscriber && microwall_is_subscription_active($user->ID)) || $is_admin) {
         return $content; // Exibir o conteúdo normalmente para assinantes ativos e administradores
     }
 
-    // Verificar se o post tem uma ou mais tags configuradas no Paywall
-    $restricted_tags = get_option('paywall_selected_tags', array());
+    // Verificar se o post tem uma ou mais tags configuradas no Microwall
+    $restricted_tags = get_option('microwall_selected_tags', array());
     $post_tags = get_the_tags($post->ID);
-    $porosity_enabled = get_option('paywall_porosity_enabled', false);
-    $porosity_limit = get_option('paywall_porosity_limit', 0);
-    // get_option('paywall_porosity_message', ''), if empty, use "Você atingiu o limite de {porosity_limit} visualizações gratuitas. Faça login ou <a href='https://loja.amarello.com.br/collections/revista' target='_blank'>assine</a> para continuar lendo." escaping the html
-    $porosity_message = get_option('paywall_porosity_message', 'Você atingiu o limite de ' . $porosity_limit . ' visualizações gratuitas. Faça login ou <a href="https://loja.amarello.com.br/collections/revista" target="_blank">assine</a> para continuar lendo.');
+    $porosity_enabled = get_option('microwall_porosity_enabled', false);
+    $porosity_limit = get_option('microwall_porosity_limit', 0);
+    // get_option('microwall_porosity_message', ''), if empty, use "Você atingiu o limite de {porosity_limit} visualizações gratuitas. Faça login ou <a href='https://loja.amarello.com.br/collections/revista' target='_blank'>assine</a> para continuar lendo." escaping the html
+    $porosity_message = get_option('microwall_porosity_message', 'Você atingiu o limite de ' . $porosity_limit . ' visualizações gratuitas. Faça login ou <a href="https://loja.amarello.com.br/collections/revista" target="_blank">assine</a> para continuar lendo.');
     // use wp_kses_post to allow html tags
     $porosity_message = wp_kses_post($porosity_message);
 
-    $view_count = paywall_get_user_view_count();
+    $view_count = microwall_get_user_view_count();
 
     if (!empty($post_tags) && !empty($restricted_tags)) {
         if ($porosity_enabled && $view_count > ($porosity_limit * 2)) {
@@ -52,7 +52,7 @@ function paywall_filter_content($content) {
 
     return $content; // Exibir o conteúdo normalmente para posts sem tags restritas
 }
-add_filter('the_content', 'paywall_filter_content');
+add_filter('the_content', 'microwall_filter_content');
 
 
 ?>
