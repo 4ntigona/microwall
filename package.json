@@ -24,6 +24,6 @@
   "homepage": "https://github.com/4ntigona/microwall",
   "devDependencies": {
     "npx": "^10.2.2",
-    "sass": "^1.77.8"
+    "sass": "^1.79.3"
   }
 }
